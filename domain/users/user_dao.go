@@ -3,6 +3,7 @@ package users
 import (
 	"fmt"
 	"github.com/thankala/bookstore_users-api/utils/errors"
+	"time"
 )
 
 var (
@@ -26,6 +27,8 @@ func (user *User) Save() *errors.RestError {
 	if usersDB[user.Id] != nil {
 		return errors.NewBadRequestError(fmt.Sprintf("User %d already exists",user.Id))
 	}
+	now := time.Now()
+	user.DateCreated = now.Format("2006-01-02T15:04:05Z")
 	usersDB[user.Id] = user
 	return nil
 }
