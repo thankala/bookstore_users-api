@@ -1,10 +1,10 @@
-package controllers
+package ping
 
 import (
 	"github.com/gofiber/fiber"
 	"net/http"
 )
 
-func Ping(c *fiber.Ctx) error{
+func Ping(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).SendString("Ping")
 }
