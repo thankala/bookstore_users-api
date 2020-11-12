@@ -14,7 +14,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 	err := c.BodyParser(&requestBody)
 	if err != nil {
-		restError := errors.NewBadRequest("Invalid JSON Body",err.Error())
+		restError := errors.NewBadRequest("Invalid JSON Body")
 		return c.Status(restError.StatusCode).JSON(restError)
 	}
 
