@@ -7,15 +7,16 @@ import (
 	"github.com/thankala/bookstore_users-api/services"
 	"github.com/thankala/bookstore_users-api/utils/errors"
 	"net/http"
+	"strconv"
 )
 
 func CreateUser(c *fiber.Ctx) error {
 	var requestBody users.User
 
-	err := c.BodyParser(&requestBody)
-	if err != nil {
-		restError := errors.NewBadRequest("Invalid JSON Body")
-		return c.Status(restError.StatusCode).JSON(restError)
+	parseErr := c.BodyParser(&requestBody)
+	if parseErr != nil {
+		err := errors.NewBadRequestError("Invalid JSON Body")
+		return c.Status(err.StatusCode).JSON(err)
 	}
 
 	result, saveError := services.CreateUser(requestBody)
@@ -25,14 +26,21 @@ func CreateUser(c *fiber.Ctx) error {
 
 	return c.Status(http.StatusCreated).JSON(&fiber.Map{
 		"result": result,
-		"error":  saveError,
 	})
 }
 
 func GetUser(c *fiber.Ctx) error {
-	return c.Status(http.StatusNotImplemented).SendString("Implement")
-}
+	userID, userErr := strconv.ParseInt(c.Params("userId"), 10, 64)
+	if userErr != nil {
+		err := errors.NewBadRequestError("Invalid UserID")
+		return c.Status(err.StatusCode).JSON(err)
+	}
+	result, err := services.GetUser(userID)
+	if err != nil {
+		return c.Status(err.StatusCode).JSON(err)
+	}
 
-func FindUser(c *fiber.Ctx) error {
-	return c.Status(http.StatusNotImplemented).SendString("Implement")
+	return c.Status(http.StatusCreated).JSON(&fiber.Map{
+		"result": result,
+	})
 }

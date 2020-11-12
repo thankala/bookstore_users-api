@@ -13,10 +13,10 @@ type User struct {
 	DateCreated string `json:"date_created"`
 }
 
-func (user *User) Validate() *errors.RestError {
+func (user User) Validate() *errors.RestError {
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
-	if user.Email == "" {
-		return errors.NewBadRequest("Invalid email address")
+	if user.Email == "" || user.DateCreated == "" || user.LastName == "" || user.FirstName == "" || user.Id == 0 {
+		return errors.NewBadRequestError("Invalid input")
 	}
 	return nil
 }
