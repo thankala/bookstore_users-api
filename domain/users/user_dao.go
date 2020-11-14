@@ -2,32 +2,22 @@ package users
 
 import (
 	"fmt"
-	"github.com/thankala/bookstore_users-api/utils/date_utils"
+	"github.com/thankala/bookstore_users-api/datasources/mysql/bookstore_users"
 	"github.com/thankala/bookstore_users-api/utils/errors"
 )
 
-var (
-	usersDB = make(map[int64]*User)
-)
-
 func (user *User) Get() *errors.RestError {
-	result := usersDB[user.Id]
-	if result == nil {
-		return errors.NewNotFoundError(fmt.Sprintf("User %d not found",user.Id))
+	result := bookstore_users.Client.First(&user, user.ID)
+	if result.Error != nil {
+		return errors.NewInternalError(fmt.Sprintf("Error when trying to get user: %s", result.Error.Error()))
 	}
-	user.FirstName = result.FirstName
-	user.LastName = result.LastName
-	user.Email = result.Email
-	user.DateCreated = result.DateCreated
-
 	return nil
 }
 
 func (user *User) Save() *errors.RestError {
-	if usersDB[user.Id] != nil {
-		return errors.NewBadRequestError(fmt.Sprintf("User %d already exists",user.Id))
+	result := bookstore_users.Client.Create(&user)
+	if result.Error != nil {
+		return errors.NewInternalError(fmt.Sprintf("Error when trying to save user: %s", result.Error.Error()))
 	}
-	user.DateCreated = date_utils.GetNowString()
-	usersDB[user.Id] = user
 	return nil
 }

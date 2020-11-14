@@ -10,6 +10,14 @@ import (
 	"os"
 )
 
+type User struct {
+	gorm.Model
+	ID        int64  `gorm:"primaryKey; autoIncrement" json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `gorm:"unique" json:"email"`
+}
+
 const (
 	mysqlUsersUsername = "MYSQL_USERNAME"
 	mysqlUsersPassword = "MYSQL_PASSWORD"
@@ -43,4 +51,8 @@ func init() {
 		panic("Failed to connect to database")
 	}
 	log.Println("Database successfully configured")
+	err = Client.AutoMigrate(&User{})
+	if err != nil {
+		panic("Failed to auto migrate")
+	}
 }

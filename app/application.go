@@ -7,6 +7,8 @@ import (
 func StartApplication() {
 	app := fiber.New()
 	mapUrls(app)
-	app.Listen(":3000")
-
+	err := app.Listen(":3000")
+	if err != nil {
+		panic(err)
+	}
 }
