@@ -29,12 +29,12 @@ func CreateUser(c *fiber.Ctx) error {
 }
 
 func GetUser(c *fiber.Ctx) error {
-	userID, userErr := strconv.ParseInt(c.Params("userId"), 10, 64)
+	userID, userErr := strconv.ParseUint(c.Params("userId"),10,64)
 	if userErr != nil {
 		err := errors.NewBadRequestError("Invalid UserID")
 		return c.Status(err.StatusCode).JSON(err)
 	}
-	result, err := services.GetUser(userID)
+	result, err := services.GetUser(uint(userID))
 	if err != nil {
 		return c.Status(err.StatusCode).JSON(err)
 	}
