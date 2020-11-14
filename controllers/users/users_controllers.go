@@ -1,6 +1,5 @@
 package users
 
-import "C"
 import (
 	"github.com/gofiber/fiber"
 	"github.com/thankala/bookstore_users-api/domain/users"
