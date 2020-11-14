@@ -8,10 +8,10 @@ import (
 
 type User struct {
 	gorm.Model
-	ID        int64     `gorm:"primaryKey; autoIncrement" json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `gorm:"unique" json:"email"`
+	ID        int64  `gorm:"primaryKey; autoIncrement" json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `gorm:"unique; not null" json:"email"`
 }
 
 func (user User) Validate() *errors.RestError {

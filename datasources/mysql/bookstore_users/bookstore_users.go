@@ -15,7 +15,7 @@ type User struct {
 	ID        int64  `gorm:"primaryKey; autoIncrement" json:"id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Email     string `gorm:"unique" json:"email"`
+	Email     string `gorm:"unique; not null" json:"email"`
 }
 
 const (
