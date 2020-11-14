@@ -2,6 +2,7 @@ package users
 
 import (
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	"github.com/thankala/bookstore_users-api/datasources/mysql/bookstore_users"
 	"github.com/thankala/bookstore_users-api/utils/date_utils"
 	"github.com/thankala/bookstore_users-api/utils/errors"
@@ -22,11 +23,15 @@ func (user *User) Get() *errors.RestError {
 func (user *User) Save() *errors.RestError {
 	result := bookstore_users.Client.Create(&user)
 	if result.Error != nil {
-		if strings.Contains(result.Error.Error(), "Error 1062") {
+		sqlErr, ok := result.Error.(*mysql.MySQLError)
+		if !ok {
+			return errors.NewInternalError(fmt.Sprintf("Error when trying to save user: %s", result.Error.Error()))
+		}
+		switch sqlErr.Number {
+		case 1062:
 			return errors.NewBadRequestError(fmt.Sprintf("Email %s already exists", user.Email))
 		}
 		return errors.NewInternalError(fmt.Sprintf("Error when trying to save user: %s", result.Error.Error()))
-
 	}
 	bookstore_users.Client.Model(&user).Update("UpdatedAt", date_utils.GetNow())
 	bookstore_users.Client.Model(&user).Update("CreatedAt", date_utils.GetNow())
