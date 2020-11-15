@@ -12,11 +12,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestError) {
 	if err := user.Save(); err != nil {
 		return nil, err
 	}
-	current, err := GetUser(user.ID)
-	if err != nil {
-		return nil, err
-	}
-	return current, nil
+	return &user, nil
 }
 
 func GetUser(userId uint) (*users.User, *errors.RestError) {
@@ -27,39 +23,25 @@ func GetUser(userId uint) (*users.User, *errors.RestError) {
 	return &user, nil
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestError) {
+func UpdateUser(user users.User) (*users.User, *errors.RestError) {
 	current, err := GetUser(user.ID)
 	if err != nil {
 		return nil, err
 	}
-
 	if validateError := user.Validate(); validateError != nil {
 		return nil, validateError
 	}
-
-	if isPartial {
-		if user.FirstName != "" {
-			current.FirstName = user.FirstName
-		}
-		if user.LastName != "" {
-			current.LastName = user.LastName
-		}
-		if user.Email != "" {
-			current.Email = user.Email
-		}
-
-	} else {
+	if user.FirstName != "" {
 		current.FirstName = user.FirstName
+	}
+	if user.LastName != "" {
 		current.LastName = user.LastName
+	}
+	if user.Email != "" {
 		current.Email = user.Email
 	}
 
-	if err := current.Update(); err != nil {
-		return nil, err
-	}
-
-	current, err = GetUser(user.ID)
-	if err != nil {
+	if err = current.Update(); err != nil {
 		return nil, err
 	}
 	return current, nil
@@ -67,8 +49,5 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestError
 
 func DeleteUser(userId uint) *errors.RestError {
 	user := users.User{ID: userId}
-	if err := user.Delete(); err != nil {
-		return err
-	}
-	return nil
+	return user.Delete()
 }

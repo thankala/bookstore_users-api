@@ -61,8 +61,7 @@ func Update(c *fiber.Ctx) error {
 
 	requestBody.ID = uint(userID)
 
-	isPartial := string(c.Context().Method()) == http.MethodPatch
-	result, saveError := services.UpdateUser(isPartial, requestBody)
+	result, saveError := services.UpdateUser(requestBody)
 	if saveError != nil {
 		return c.Status(saveError.StatusCode).JSON(saveError)
 	}
