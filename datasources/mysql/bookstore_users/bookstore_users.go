@@ -8,13 +8,18 @@ import (
 	"gorm.io/gorm"
 	"log"
 	"os"
+	"time"
 )
 
 type User struct {
 	gorm.Model
+	ID        uint   `gorm:"primaryKey" json:"ID"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `gorm:"unique; not null" json:"email"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt gorm.DeletedAt
 }
 
 const (
@@ -26,8 +31,7 @@ const (
 )
 
 var (
-	Client *gorm.DB
-
+	Client   *gorm.DB
 	_        = godotenv.Load("variables.env")
 	username = os.Getenv(mysqlUsersUsername)
 	password = os.Getenv(mysqlUsersPassword)
@@ -37,7 +41,7 @@ var (
 )
 
 func init() {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&time_zone=UTC",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=UTC&time_zone=UTC",
 		username,
 		password,
 		host,
@@ -45,10 +49,14 @@ func init() {
 		schema,
 	)
 	var err error
-	Client, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	})
 	if err != nil {
 		panic("Failed to connect to database")
 	}
+	Client = db.Session(&gorm.Session{PrepareStmt: true})
 	log.Println("Database successfully configured")
 	err = Client.AutoMigrate(&User{})
 	if err != nil {

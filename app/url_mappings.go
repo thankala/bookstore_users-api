@@ -8,6 +8,10 @@ import (
 
 func mapUrls(app *fiber.App) {
 	app.Get("/ping", ping.Ping)
-	app.Get("/users/:userId", users.GetUser)
-	app.Post("/users", users.CreateUser)
+
+	app.Post("/users", users.Create)
+	app.Get("/users/:userId", users.Get)
+	app.Put("/users/:userId", users.Update)
+	app.Patch("/users/:userId", users.Update)
+	app.Delete("/users/:userId", users.Delete)
 }
