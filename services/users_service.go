@@ -40,7 +40,6 @@ func UpdateUser(user users.User) (*users.User, *errors.RestError) {
 	if user.Email != "" {
 		current.Email = user.Email
 	}
-
 	if err = current.Update(); err != nil {
 		return nil, err
 	}
