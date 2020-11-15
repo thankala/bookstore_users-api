@@ -28,9 +28,6 @@ func UpdateUser(user users.User) (*users.User, *errors.RestError) {
 	if err != nil {
 		return nil, err
 	}
-	if validateError := user.Validate(); validateError != nil {
-		return nil, validateError
-	}
 	if user.FirstName != "" {
 		current.FirstName = user.FirstName
 	}
@@ -39,6 +36,9 @@ func UpdateUser(user users.User) (*users.User, *errors.RestError) {
 	}
 	if user.Email != "" {
 		current.Email = user.Email
+	}
+	if validateError := current.Validate(); validateError != nil {
+		return nil, validateError
 	}
 	if err = current.Update(); err != nil {
 		return nil, err
@@ -49,4 +49,9 @@ func UpdateUser(user users.User) (*users.User, *errors.RestError) {
 func DeleteUser(userId uint) *errors.RestError {
 	user := users.User{ID: userId}
 	return user.Delete()
+}
+
+func Search(status string) ([]users.User, *errors.RestError) {
+	user := users.User{}
+	return user.FindByStatus(status)
 }

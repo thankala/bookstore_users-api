@@ -13,4 +13,6 @@ func mapUrls(app *fiber.App) {
 	app.Get("/users/:userId", users.Get)
 	app.Patch("/users/:userId", users.Update)
 	app.Delete("/users/:userId", users.Delete)
+
+	app.Get("/internal/users/search",users.Search)
 }

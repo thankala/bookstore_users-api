@@ -37,3 +37,12 @@ func (user *User) Delete() *errors.RestError {
 	}
 	return nil
 }
+
+func (user *User) FindByStatus(status string) ([]User, *errors.RestError) {
+	var users []User
+	result := bookstore_users.Client.Where("status = ?", status).Find(&users)
+	if result.Error != nil {
+		return nil, mysql_utils.ParseError(result.Error)
+	}
+	return users, nil
+}

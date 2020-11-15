@@ -85,3 +85,12 @@ func Delete(c *fiber.Ctx) error {
 		"result": "deleted",
 	})
 }
+
+func Search(c *fiber.Ctx) error {
+	userStatus := c.Query("status")
+	users, err := services.Search(userStatus)
+	if err != nil {
+		return c.Status(err.StatusCode).JSON(err)
+	}
+	return c.Status(http.StatusOK).JSON(users)
+}
