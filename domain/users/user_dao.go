@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"github.com/thankala/bookstore_users-api/datasources/mysql/bookstore_users"
 	"github.com/thankala/bookstore_users-api/utils/errors"
 	"github.com/thankala/bookstore_users-api/utils/mysql_utils"
@@ -38,11 +39,14 @@ func (user *User) Delete() *errors.RestError {
 	return nil
 }
 
-func (user *User) FindByStatus(status string) ([]User, *errors.RestError) {
+func (user *User) FindByStatus(status string) (Users, *errors.RestError) {
 	var users []User
 	result := bookstore_users.Client.Where("status = ?", status).Find(&users)
 	if result.Error != nil {
 		return nil, mysql_utils.ParseError(result.Error)
+	}
+	if len(users) == 0 {
+		return nil, errors.NewNotFoundError(fmt.Sprintf("No users matching status %s", status))
 	}
 	return users, nil
 }

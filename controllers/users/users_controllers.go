@@ -12,10 +12,8 @@ import (
 func Create(c *fiber.Ctx) error {
 	var requestBody users.User
 
-	parseErr := c.BodyParser(&requestBody)
-	if parseErr != nil {
-		err := errors.NewBadRequestError("Invalid JSON Body")
-		return c.Status(err.StatusCode).JSON(err)
+	if parseErr := parseRequestBody(c, &requestBody); parseErr != nil {
+		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
 	result, saveError := services.CreateUser(requestBody)
@@ -29,41 +27,34 @@ func Create(c *fiber.Ctx) error {
 }
 
 func Get(c *fiber.Ctx) error {
-	userID, userErr := strconv.ParseUint(c.Params("userId"), 10, 64)
-	if userErr != nil {
-		err := errors.NewBadRequestError("Invalid UserID")
-		return c.Status(err.StatusCode).JSON(err)
+	userID, parseErr := parseUserID(c)
+	if parseErr != nil {
+		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
-	result, err := services.GetUser(uint(userID))
-	if err != nil {
-		return c.Status(err.StatusCode).JSON(err)
+	user, createErr := services.GetUser(userID)
+	if createErr != nil {
+		return c.Status(createErr.StatusCode).JSON(createErr)
 	}
-
-	return c.Status(http.StatusOK).JSON(&fiber.Map{
-		"result": result,
-	})
+	return c.Status(http.StatusOK).JSON(user.Marshall(string(c.Request().Header.PeekBytes([]byte("X-Public"))) == "true"))
 }
 
 func Update(c *fiber.Ctx) error {
-	userID, userErr := strconv.ParseUint(c.Params("userId"), 10, 64)
-	if userErr != nil {
-		err := errors.NewBadRequestError("Invalid UserID")
-		return c.Status(err.StatusCode).JSON(err)
+	userID, parseErr := parseUserID(c)
+	if parseErr != nil {
+		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
 	var requestBody users.User
 
-	parseErr := c.BodyParser(&requestBody)
-	if parseErr != nil {
-		err := errors.NewBadRequestError("Invalid JSON Body")
-		return c.Status(err.StatusCode).JSON(err)
+	if parseErr := parseRequestBody(c, &requestBody); parseErr != nil {
+		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
-	requestBody.ID = uint(userID)
+	requestBody.ID = userID
 
-	result, saveError := services.UpdateUser(requestBody)
-	if saveError != nil {
-		return c.Status(saveError.StatusCode).JSON(saveError)
+	result, updateErr := services.UpdateUser(requestBody)
+	if updateErr != nil {
+		return c.Status(updateErr.StatusCode).JSON(updateErr)
 	}
 
 	return c.Status(http.StatusOK).JSON(&fiber.Map{
@@ -72,14 +63,13 @@ func Update(c *fiber.Ctx) error {
 }
 
 func Delete(c *fiber.Ctx) error {
-	userID, userErr := strconv.ParseUint(c.Params("userId"), 10, 64)
-	if userErr != nil {
-		err := errors.NewBadRequestError("Invalid UserID")
-		return c.Status(err.StatusCode).JSON(err)
+	userID, parseErr := parseUserID(c)
+	if parseErr != nil {
+		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
-	err := services.DeleteUser(uint(userID))
-	if err != nil {
-		return c.Status(err.StatusCode).JSON(err)
+	deleteErr := services.DeleteUser(userID)
+	if deleteErr != nil {
+		return c.Status(deleteErr.StatusCode).JSON(deleteErr)
 	}
 	return c.Status(http.StatusOK).JSON(&fiber.Map{
 		"result": "deleted",
@@ -88,9 +78,25 @@ func Delete(c *fiber.Ctx) error {
 
 func Search(c *fiber.Ctx) error {
 	userStatus := c.Query("status")
-	users, err := services.Search(userStatus)
-	if err != nil {
-		return c.Status(err.StatusCode).JSON(err)
+	usersArray, searchErr := services.Search(userStatus)
+	if searchErr != nil {
+		return c.Status(searchErr.StatusCode).JSON(searchErr)
 	}
-	return c.Status(http.StatusOK).JSON(users)
+	return c.Status(http.StatusOK).JSON(usersArray.Marshall(string(c.Request().Header.PeekBytes([]byte("X-Public"))) == "true"))
+}
+
+func parseRequestBody(c *fiber.Ctx, requestBody *users.User) *errors.RestError {
+	parseErr := c.BodyParser(requestBody)
+	if parseErr != nil {
+		return errors.NewBadRequestError("Invalid JSON Body")
+	}
+	return nil
+}
+
+func parseUserID(c *fiber.Ctx) (uint, *errors.RestError) {
+	userID, userErr := strconv.ParseUint(c.Params("userId"), 10, 64)
+	if userErr != nil {
+		return 0, errors.NewBadRequestError("Invalid UserID")
+	}
+	return uint(userID), nil
 }

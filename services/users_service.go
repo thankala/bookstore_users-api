@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/thankala/bookstore_users-api/domain/users"
+	"github.com/thankala/bookstore_users-api/utils/crypto_utils"
 	"github.com/thankala/bookstore_users-api/utils/errors"
 )
 
@@ -9,6 +10,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestError) {
 	if validateError := user.Validate(); validateError != nil {
 		return nil, validateError
 	}
+	user.Password = crypto_utils.GetMd5(user.Password)
 	if err := user.Save(); err != nil {
 		return nil, err
 	}
@@ -51,7 +53,7 @@ func DeleteUser(userId uint) *errors.RestError {
 	return user.Delete()
 }
 
-func Search(status string) ([]users.User, *errors.RestError) {
+func Search(status string) (users.Users, *errors.RestError) {
 	user := users.User{}
 	return user.FindByStatus(status)
 }
