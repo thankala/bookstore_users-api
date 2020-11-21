@@ -69,6 +69,9 @@ func (usersService *usersService) DeleteUser(userId uint) *errors.RestError {
 }
 
 func (usersService *usersService) Search(status string) (users.Users, *errors.RestError) {
-	user := users.User{}
-	return user.FindByStatus(status)
+	users := users.Users{}
+	if err := users.FindByStatus(status); err != nil {
+		return nil, err
+	}
+	return users, nil
 }
