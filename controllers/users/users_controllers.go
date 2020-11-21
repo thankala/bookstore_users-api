@@ -16,7 +16,7 @@ func Create(c *fiber.Ctx) error {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
-	result, saveError := services.CreateUser(requestBody)
+	result, saveError := services.UsersService.CreateUser(requestBody)
 	if saveError != nil {
 		return c.Status(saveError.StatusCode).JSON(saveError)
 	}
@@ -31,7 +31,7 @@ func Get(c *fiber.Ctx) error {
 	if parseErr != nil {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
-	user, createErr := services.GetUser(userID)
+	user, createErr := services.UsersService.GetUser(userID)
 	if createErr != nil {
 		return c.Status(createErr.StatusCode).JSON(createErr)
 	}
@@ -52,7 +52,7 @@ func Update(c *fiber.Ctx) error {
 
 	requestBody.ID = userID
 
-	result, updateErr := services.UpdateUser(requestBody)
+	result, updateErr := services.UsersService.UpdateUser(requestBody)
 	if updateErr != nil {
 		return c.Status(updateErr.StatusCode).JSON(updateErr)
 	}
@@ -67,7 +67,7 @@ func Delete(c *fiber.Ctx) error {
 	if parseErr != nil {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
-	deleteErr := services.DeleteUser(userID)
+	deleteErr := services.UsersService.DeleteUser(userID)
 	if deleteErr != nil {
 		return c.Status(deleteErr.StatusCode).JSON(deleteErr)
 	}
@@ -78,7 +78,7 @@ func Delete(c *fiber.Ctx) error {
 
 func Search(c *fiber.Ctx) error {
 	userStatus := c.Query("status")
-	usersArray, searchErr := services.Search(userStatus)
+	usersArray, searchErr := services.UsersService.Search(userStatus)
 	if searchErr != nil {
 		return c.Status(searchErr.StatusCode).JSON(searchErr)
 	}
