@@ -1,7 +1,7 @@
 package users
 
 import (
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"github.com/thankala/bookstore_users-api/domain/users"
 	"github.com/thankala/bookstore_users-api/services"
 	"github.com/thankala/bookstore_users-api/utils/errors"
@@ -35,7 +35,7 @@ func Get(c *fiber.Ctx) error {
 	if createErr != nil {
 		return c.Status(createErr.StatusCode).JSON(createErr)
 	}
-	return c.Status(http.StatusOK).JSON(user.Marshall(string(c.Request().Header.PeekBytes([]byte("X-Public"))) == "true"))
+	return c.Status(http.StatusOK).JSON(user.Marshall(c.Get("X-Public") == "true"))
 }
 
 func Update(c *fiber.Ctx) error {
@@ -82,7 +82,7 @@ func Search(c *fiber.Ctx) error {
 	if searchErr != nil {
 		return c.Status(searchErr.StatusCode).JSON(searchErr)
 	}
-	return c.Status(http.StatusOK).JSON(usersArray.Marshall(string(c.Request().Header.PeekBytes([]byte("X-Public"))) == "true"))
+	return c.Status(http.StatusOK).JSON(usersArray.Marshall(c.Get("X-Public") == "true"))
 }
 
 func parseRequestBody(c *fiber.Ctx, requestBody *users.User) *errors.RestError {
