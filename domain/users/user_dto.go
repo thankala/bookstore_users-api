@@ -27,8 +27,22 @@ type User struct {
 type Users []User
 
 func (user User) Validate() *errors.RestError {
+	if user.Password == "" {
+		return errors.NewBadRequestError("Password field empty")
+	}
+	if user.Email == "" {
+		return errors.NewBadRequestError("Email field empty")
+	}
+	if user.FirstName == "" {
+		return errors.NewBadRequestError("First name field empty")
+	}
+	if user.LastName == "" {
+		return errors.NewBadRequestError("Last name field empty")
+	}
+
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
+
 	return nil
 }

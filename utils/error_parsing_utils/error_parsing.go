@@ -13,7 +13,7 @@ func ParseError(err error) *errors.RestError {
 	if !ok {
 		if strings.Contains(err.Error(), "record not found") {
 			logger.Error("User error", err)
-			return errors.NewNotFoundError("No record matching given ID")
+			return errors.NewNotFoundError("No record found")
 		}
 		logger.Error("Error parsing database response", err)
 		return errors.NewInternalError("Error parsing database response")

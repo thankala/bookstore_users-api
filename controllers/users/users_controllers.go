@@ -12,7 +12,7 @@ import (
 func Create(c *fiber.Ctx) error {
 	var requestBody users.User
 
-	if parseErr := parseRequestBody(c, &requestBody); parseErr != nil {
+	if parseErr := parseUserRequest(c, &requestBody); parseErr != nil {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
@@ -46,7 +46,7 @@ func Update(c *fiber.Ctx) error {
 
 	var requestBody users.User
 
-	if parseErr := parseRequestBody(c, &requestBody); parseErr != nil {
+	if parseErr := parseUserRequest(c, &requestBody); parseErr != nil {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
@@ -85,7 +85,32 @@ func Search(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(usersArray.Marshall(c.Get("X-Public") == "true"))
 }
 
-func parseRequestBody(c *fiber.Ctx, requestBody *users.User) *errors.RestError {
+func Login(c *fiber.Ctx) error {
+	var requestBody users.LoginRequest
+
+	if parseErr := parseLoginRequest(c, &requestBody); parseErr != nil {
+		return c.Status(parseErr.StatusCode).JSON(parseErr)
+	}
+
+	result, saveError := services.UsersService.LoginUser(requestBody)
+	if saveError != nil {
+		return c.Status(saveError.StatusCode).JSON(saveError)
+	}
+
+	return c.Status(http.StatusCreated).JSON(&fiber.Map{
+		"result": result,
+	})
+}
+
+func parseUserRequest(c *fiber.Ctx, requestBody *users.User) *errors.RestError {
+	parseErr := c.BodyParser(requestBody)
+	if parseErr != nil {
+		return errors.NewBadRequestError("Invalid JSON Body")
+	}
+	return nil
+}
+
+func parseLoginRequest(c *fiber.Ctx, requestBody *users.LoginRequest) *errors.RestError {
 	parseErr := c.BodyParser(requestBody)
 	if parseErr != nil {
 		return errors.NewBadRequestError("Invalid JSON Body")
@@ -99,21 +124,4 @@ func parseUserID(c *fiber.Ctx) (uint, *errors.RestError) {
 		return 0, errors.NewBadRequestError("Invalid UserID")
 	}
 	return uint(userID), nil
-}
-
-func Login(c *fiber.Ctx) error {
-	var requestBody users.User
-
-	if parseErr := parseRequestBody(c, &requestBody); parseErr != nil {
-		return c.Status(parseErr.StatusCode).JSON(parseErr)
-	}
-
-	result, saveError := services.UsersService.LoginUser(requestBody)
-	if saveError != nil {
-		return c.Status(saveError.StatusCode).JSON(saveError)
-	}
-
-	return c.Status(http.StatusCreated).JSON(&fiber.Map{
-		"result": result,
-	})
 }

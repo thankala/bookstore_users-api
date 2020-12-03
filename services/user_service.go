@@ -16,7 +16,7 @@ type UserService interface {
 	UpdateUser(users.User) (*users.User, *errors.RestError)
 	DeleteUser(uint) *errors.RestError
 	SearchUser(string) (users.Users, *errors.RestError)
-	LoginUser(users.User) (*users.User, *errors.RestError)
+	LoginUser(request users.LoginRequest) (*users.User, *errors.RestError)
 }
 
 type usersService struct {
@@ -27,6 +27,7 @@ func (usersService *usersService) CreateUser(user users.User) (*users.User, *err
 		return nil, validateError
 	}
 	user.Password = crypto_utils.GetMd5(user.Password)
+	user.Status = users.StatusActive
 	if err := user.Save(); err != nil {
 		return nil, err
 	}
@@ -77,7 +78,11 @@ func (usersService *usersService) SearchUser(status string) (users.Users, *error
 	return users, nil
 }
 
-func (usersService *usersService) LoginUser(user users.User) (*users.User, *errors.RestError) {
+func (usersService *usersService) LoginUser(request users.LoginRequest) (*users.User, *errors.RestError) {
+	user := users.User{
+		Email:    request.Email,
+		Password: crypto_utils.GetMd5(request.Password),
+	}
 	if err := user.FindByEmailAndPassword(); err != nil {
 		return nil, err
 	}

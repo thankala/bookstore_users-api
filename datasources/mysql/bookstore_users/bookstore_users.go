@@ -6,6 +6,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"log"
 	"os"
 	"time"
@@ -59,6 +60,7 @@ func init() {
 		panic("Failed to connect to database")
 	}
 	Client = db.Session(&gorm.Session{PrepareStmt: true})
+	db.Logger.LogMode(logger.Silent)
 	log.Println("Database successfully configured")
 	err = Client.AutoMigrate(&User{})
 	if err != nil {
