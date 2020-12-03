@@ -78,7 +78,7 @@ func Delete(c *fiber.Ctx) error {
 
 func Search(c *fiber.Ctx) error {
 	userStatus := c.Query("status")
-	usersArray, searchErr := services.UsersService.Search(userStatus)
+	usersArray, searchErr := services.UsersService.SearchUser(userStatus)
 	if searchErr != nil {
 		return c.Status(searchErr.StatusCode).JSON(searchErr)
 	}
@@ -99,4 +99,21 @@ func parseUserID(c *fiber.Ctx) (uint, *errors.RestError) {
 		return 0, errors.NewBadRequestError("Invalid UserID")
 	}
 	return uint(userID), nil
+}
+
+func Login(c *fiber.Ctx) error {
+	var requestBody users.User
+
+	if parseErr := parseRequestBody(c, &requestBody); parseErr != nil {
+		return c.Status(parseErr.StatusCode).JSON(parseErr)
+	}
+
+	result, saveError := services.UsersService.LoginUser(requestBody)
+	if saveError != nil {
+		return c.Status(saveError.StatusCode).JSON(saveError)
+	}
+
+	return c.Status(http.StatusCreated).JSON(&fiber.Map{
+		"result": result,
+	})
 }

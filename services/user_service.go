@@ -15,7 +15,8 @@ type UserService interface {
 	GetUser(uint) (*users.User, *errors.RestError)
 	UpdateUser(users.User) (*users.User, *errors.RestError)
 	DeleteUser(uint) *errors.RestError
-	Search(string) (users.Users, *errors.RestError)
+	SearchUser(string) (users.Users, *errors.RestError)
+	LoginUser(users.User) (*users.User, *errors.RestError)
 }
 
 type usersService struct {
@@ -68,10 +69,17 @@ func (usersService *usersService) DeleteUser(userId uint) *errors.RestError {
 	return user.Delete()
 }
 
-func (usersService *usersService) Search(status string) (users.Users, *errors.RestError) {
+func (usersService *usersService) SearchUser(status string) (users.Users, *errors.RestError) {
 	users := users.Users{}
 	if err := users.FindByStatus(status); err != nil {
 		return nil, err
 	}
 	return users, nil
+}
+
+func (usersService *usersService) LoginUser(user users.User) (*users.User, *errors.RestError) {
+	if err := user.FindByEmailAndPassword(); err != nil {
+		return nil, err
+	}
+	return &user, nil
 }

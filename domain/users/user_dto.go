@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const (
+	StatusActive = "active"
+)
+
 type User struct {
 	gorm.Model
 	ID        uint   `gorm:"primaryKey" json:"ID"`

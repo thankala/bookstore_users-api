@@ -50,3 +50,11 @@ func (users *Users) FindByStatus(status string) *errors.RestError {
 	}
 	return nil
 }
+
+func (user *User) FindByEmailAndPassword() *errors.RestError {
+	result := bookstore_users.Client.Where(&User{Email: user.Email, Password: user.Password}).First(&user)
+	if result.Error != nil {
+		return error_parsing_utils.ParseError(result.Error)
+	}
+	return nil
+}
