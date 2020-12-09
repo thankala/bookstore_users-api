@@ -16,7 +16,7 @@ func (user *User) Save() *errors.RestError {
 }
 
 func (user *User) Get() *errors.RestError {
-	result := bookstore_users.Client.First(&user, user.ID)
+	result := bookstore_users.Client.First(&user, user.Id)
 	if result.Error != nil {
 		return error_parsing_utils.ParseError(result.Error)
 	}

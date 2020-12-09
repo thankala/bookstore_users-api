@@ -2,6 +2,7 @@ package users
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/thankala/bookstore_auth-go/auth"
 	"github.com/thankala/bookstore_users-api/domain/users"
 	"github.com/thankala/bookstore_users-api/services"
 	"github.com/thankala/bookstore_users-api/utils/errors"
@@ -16,26 +17,31 @@ func Create(c *fiber.Ctx) error {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
-	result, saveError := services.UsersService.CreateUser(requestBody)
+	user, saveError := services.UsersService.CreateUser(requestBody)
 	if saveError != nil {
 		return c.Status(saveError.StatusCode).JSON(saveError)
 	}
 
-	return c.Status(http.StatusCreated).JSON(&fiber.Map{
-		"result": result,
-	})
+	return c.Status(http.StatusCreated).JSON(user)
 }
 
 func Get(c *fiber.Ctx) error {
+	if err := auth.AuthenticateRequest(c.Request()); err != nil {
+		return c.Status(err.StatusCode).JSON(err)
+	}
 	userID, parseErr := parseUserID(c)
 	if parseErr != nil {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
-	user, createErr := services.UsersService.GetUser(userID)
-	if createErr != nil {
-		return c.Status(createErr.StatusCode).JSON(createErr)
+	user, getErr := services.UsersService.GetUser(userID)
+	if getErr != nil {
+		return c.Status(getErr.StatusCode).JSON(getErr)
 	}
-	return c.Status(http.StatusOK).JSON(user.Marshall(c.Get("X-Public") == "true"))
+	if auth.GetCallerId(c.Request()) == user.Id {
+		return c.Status(http.StatusOK).JSON(user.Marshall(false))
+
+	}
+	return c.Status(http.StatusOK).JSON(user.Marshall(auth.IsPublic(c.Request())))
 }
 
 func Update(c *fiber.Ctx) error {
@@ -50,16 +56,14 @@ func Update(c *fiber.Ctx) error {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
-	requestBody.ID = userID
+	requestBody.Id = userID
 
-	result, updateErr := services.UsersService.UpdateUser(requestBody)
+	user, updateErr := services.UsersService.UpdateUser(requestBody)
 	if updateErr != nil {
 		return c.Status(updateErr.StatusCode).JSON(updateErr)
 	}
 
-	return c.Status(http.StatusOK).JSON(&fiber.Map{
-		"result": result,
-	})
+	return c.Status(http.StatusOK).JSON(user)
 }
 
 func Delete(c *fiber.Ctx) error {
@@ -82,7 +86,7 @@ func Search(c *fiber.Ctx) error {
 	if searchErr != nil {
 		return c.Status(searchErr.StatusCode).JSON(searchErr)
 	}
-	return c.Status(http.StatusOK).JSON(usersArray.Marshall(c.Get("X-Public") == "true"))
+	return c.Status(http.StatusOK).JSON(usersArray.Marshall(auth.IsPublic(c.Request())))
 }
 
 func Login(c *fiber.Ctx) error {
@@ -92,14 +96,12 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(parseErr.StatusCode).JSON(parseErr)
 	}
 
-	result, saveError := services.UsersService.LoginUser(requestBody)
+	user, saveError := services.UsersService.LoginUser(requestBody)
 	if saveError != nil {
 		return c.Status(saveError.StatusCode).JSON(saveError)
 	}
 
-	return c.Status(http.StatusCreated).JSON(&fiber.Map{
-		"result": result,
-	})
+	return c.Status(http.StatusOK).JSON(user.Marshall(c.Get("X-Public") == "true"))
 }
 
 func parseUserRequest(c *fiber.Ctx, requestBody *users.User) *errors.RestError {
@@ -118,10 +120,10 @@ func parseLoginRequest(c *fiber.Ctx, requestBody *users.LoginRequest) *errors.Re
 	return nil
 }
 
-func parseUserID(c *fiber.Ctx) (uint, *errors.RestError) {
-	userID, userErr := strconv.ParseUint(c.Params("userId"), 10, 64)
+func parseUserID(c *fiber.Ctx) (int64, *errors.RestError) {
+	userID, userErr := strconv.ParseInt(c.Params("userId"), 10, 64)
 	if userErr != nil {
 		return 0, errors.NewBadRequestError("Invalid UserID")
 	}
-	return uint(userID), nil
+	return userID, nil
 }

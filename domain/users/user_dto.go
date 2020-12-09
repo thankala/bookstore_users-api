@@ -13,7 +13,7 @@ const (
 
 type User struct {
 	gorm.Model
-	ID        uint   `gorm:"primaryKey" json:"ID"`
+	Id        int64    `gorm:"primaryKey" json:"Id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `gorm:"unique;not null" json:"email"`

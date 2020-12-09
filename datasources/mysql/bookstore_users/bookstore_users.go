@@ -14,7 +14,7 @@ import (
 
 type User struct {
 	gorm.Model
-	ID        uint   `gorm:"primaryKey" json:"ID"`
+	Id        int64  `gorm:"primaryKey" json:"Id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `gorm:"unique;not null" json:"email"`
@@ -53,6 +53,7 @@ func init() {
 	)
 	var err error
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger:                 logger.Default.LogMode(logger.Silent),
 		SkipDefaultTransaction: true,
 		PrepareStmt:            true,
 	})
@@ -60,7 +61,6 @@ func init() {
 		panic("Failed to connect to database")
 	}
 	Client = db.Session(&gorm.Session{PrepareStmt: true})
-	db.Logger.LogMode(logger.Silent)
 	log.Println("Database successfully configured")
 	err = Client.AutoMigrate(&User{})
 	if err != nil {

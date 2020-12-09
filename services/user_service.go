@@ -12,9 +12,9 @@ var (
 
 type UserService interface {
 	CreateUser(users.User) (*users.User, *errors.RestError)
-	GetUser(uint) (*users.User, *errors.RestError)
+	GetUser(int64) (*users.User, *errors.RestError)
 	UpdateUser(users.User) (*users.User, *errors.RestError)
-	DeleteUser(uint) *errors.RestError
+	DeleteUser(int64) *errors.RestError
 	SearchUser(string) (users.Users, *errors.RestError)
 	LoginUser(request users.LoginRequest) (*users.User, *errors.RestError)
 }
@@ -34,8 +34,8 @@ func (usersService *usersService) CreateUser(user users.User) (*users.User, *err
 	return &user, nil
 }
 
-func (usersService *usersService) GetUser(userId uint) (*users.User, *errors.RestError) {
-	user := users.User{ID: userId}
+func (usersService *usersService) GetUser(userId int64) (*users.User, *errors.RestError) {
+	user := users.User{Id: userId}
 	if err := user.Get(); err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (usersService *usersService) GetUser(userId uint) (*users.User, *errors.Res
 }
 
 func (usersService *usersService) UpdateUser(user users.User) (*users.User, *errors.RestError) {
-	current, err := usersService.GetUser(user.ID)
+	current, err := usersService.GetUser(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +65,8 @@ func (usersService *usersService) UpdateUser(user users.User) (*users.User, *err
 	return current, nil
 }
 
-func (usersService *usersService) DeleteUser(userId uint) *errors.RestError {
-	user := users.User{ID: userId}
+func (usersService *usersService) DeleteUser(userId int64) *errors.RestError {
+	user := users.User{Id: userId}
 	return user.Delete()
 }
 

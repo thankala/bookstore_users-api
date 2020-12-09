@@ -6,13 +6,13 @@ import (
 )
 
 type PublicUser struct {
-	ID        uint   `json:"ID"`
+	Id        int64   `json:"Id"`
 	Status    string `json:"status"`
 	CreatedAt time.Time
 }
 
 type PrivateUser struct {
-	ID        uint   `json:"ID"`
+	Id        int64   `json:"Id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
@@ -32,7 +32,7 @@ func (users Users) Marshall(isPublic bool) []interface{} {
 func (user *User) Marshall(isPublic bool) interface{} {
 	if isPublic {
 		return PublicUser{
-			ID:        user.ID,
+			Id:        user.Id,
 			Status:    user.Status,
 			CreatedAt: user.CreatedAt,
 		}
